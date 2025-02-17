@@ -43,6 +43,6 @@ local Button = MainTab:CreateButton({
     Name = "Auto Time",
     Callback = function()
         -- The function that takes place when the button is pressed
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/PunchMadeScript/Rh2-auto-timer/refs/heads/main/Working%20on%20the%20hub"))();
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/RH2/refs/heads/main/Auto%20T"))();
     end,
 })
