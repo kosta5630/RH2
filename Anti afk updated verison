@@ -1,0 +1,37 @@
+local player = game.Players.LocalPlayer
+local playerGui = player:FindFirstChild("PlayerGui")
+
+-- Function to disable the AFK script
+local function disableAFKScript()
+    if playerGui then
+        local afkUi = playerGui:FindFirstChild("AFK.Ui")
+        if afkUi then
+            local afkCheck = afkUi:FindFirstChild("AFK.Check")
+            if afkCheck then
+                afkCheck.Disabled = true
+            end
+        end
+    end
+end
+
+-- Override function to bypass AFK check
+local function bypassAFK()
+    return
+end
+
+getfenv().var3 = bypassAFK  -- Override function to prevent detection
+
+-- Fake movement to trick AFK detection
+local mt = getrawmetatable(game)
+setreadonly(mt, false)
+
+local oldIndex = mt.__index
+mt.__index = function(self, key)
+    if key == "MoveDirection" then
+        return Vector3.new(1, 0, 0) -- Makes script think you're always moving
+    end
+    return oldIndex(self, key)
+end
+
+-- Execute all bypass methods
+disableAFKScript()
