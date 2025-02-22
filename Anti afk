@@ -1,0 +1,10 @@
+local player = game.Players.LocalPlayer local playerGui = player:FindFirstChild("PlayerGui") local starterGui = game:GetService("StarterGui")
+
+-- Function to disable AFK UI local function disableAFKUI(parent) if parent then local afkUi = parent:FindFirstChild("AFK.Ui") if afkUi then local afkCheck = afkUi:FindFirstChild("AFK.Check") if afkCheck then afkCheck.Enabled = false end afkUi.Enabled = false end end end
+
+-- Disable in PlayerGui if playerGui then disableAFKUI(playerGui) end
+
+-- Disable in StarterGui (for future GUI replications) disableAFKUI(starterGui)
+
+-- Listen for new instances being added game:GetService("RunService").RenderStepped:Connect(function() disableAFKUI(playerGui) end)
+
