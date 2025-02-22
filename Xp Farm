@@ -1,0 +1,17 @@
+-- method is simple just go into rec and grab a ball and run this 
+-- you use this at ur own risk 
+-- if you get banned its on you theres no telling if rh shit 2 updates the game
+-- badgeplug on top 
+-- super simple
+
+local args = {
+    [1] = true,
+    [2] = "Shooting",
+    [3] = "Standing Shot"
+}
+
+local event = game:GetService("ReplicatedStorage"):WaitForChild("PlayerEvents"):WaitForChild("Shooting")
+
+for i = 1, 200 do
+    event:FireServer(unpack(args))
+end
