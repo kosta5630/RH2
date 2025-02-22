@@ -12,6 +12,6 @@ local args = {
 
 local event = game:GetService("ReplicatedStorage"):WaitForChild("PlayerEvents"):WaitForChild("Shooting")
 
-for i = 1, 800 do
+for i = 1, 200 do
     event:FireServer(unpack(args))
 end
