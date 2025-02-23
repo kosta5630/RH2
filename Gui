@@ -49,3 +49,14 @@ local Toggle = MainTab:CreateToggle({
        end
    end,
 })
+
+local Toggle = MainTab:CreateToggle({
+   Name = "Anti Afk",
+   CurrentValue = false,
+   Flag = "Anti Afk_Toggle",
+   Callback = function(Value)
+       if Value then
+           loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/RH2/refs/heads/main/Anti%20afk"))();
+        end
+   end,
+})
