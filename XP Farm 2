@@ -1,0 +1,20 @@
+local args = {
+    [1] = true,
+    [2] = "Shooting",
+    [3] = "Standing Shot"
+}
+
+local event = game:GetService("ReplicatedStorage"):WaitForChild("PlayerEvents"):WaitForChild("Shooting")
+
+-- Function to send events with slight delays
+local function fireEvents()
+    while true do
+        event:FireServer(unpack(args))
+        wait(math.random() * 0.1)  -- Random delay to avoid detection
+    end
+end
+
+-- Start firing events continuously in a new thread
+spawn(function()
+    fireEvents()
+end)
