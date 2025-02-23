@@ -1,17 +1,23 @@
--- method is simple just go into rec and grab a ball and run this 
--- you use this at ur own risk 
--- if you get banned its on you theres no telling if rh shit 2 updates the game
--- badgeplug on top 
--- super simple
+_G.ShootingEnabled = _G.ShootingEnabled or true
 
-local args = {
-    [1] = true,
-    [2] = "Shooting",
-    [3] = "Standing Shot"
-}
+local function startShooting()
+    while _G.ShootingEnabled do
+        local args = {
+            [1] = true,
+            [2] = "Shooting",
+            [3] = "Standing Shot"
+        }
 
-local event = game:GetService("ReplicatedStorage"):WaitForChild("PlayerEvents"):WaitForChild("Shooting")
+        local event = game:GetService("ReplicatedStorage"):WaitForChild("PlayerEvents"):WaitForChild("Shooting")
 
-for i = 1, 200 do
-    event:FireServer(unpack(args))
+        for i = 1, 200 do
+            if not _G.ShootingEnabled then return end -- Stop if toggled off
+            event:FireServer(unpack(args))
+        end
+        task.wait(0.1)
+    end
+end
+
+if _G.ShootingEnabled then
+    startShooting()
 end
