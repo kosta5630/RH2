@@ -60,3 +60,14 @@ local Toggle = MainTab:CreateToggle({
         end
    end,
 })
+
+local Toggle = MainTab:CreateToggle({
+   Name = "XP2",
+   CurrentValue = false,
+   Flag = "XP2_Toggle",
+   Callback = function(Value)
+       if Value then
+           loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/RH2/refs/heads/main/XP%20Farm%202"))();
+        end
+   end,
+})
