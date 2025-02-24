@@ -1,22 +1,42 @@
-local player = game.Players.LocalPlayer
-local VirtualUser = game:GetService("VirtualUser")
-local StarterGui = game:GetService("StarterGui")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+_G.Xp = true
+_G.disableShooting = false
+_G.Multiplier = 100 
+_G.AutoPlay = true
+_G.AutoShoot = true -- turn this to false if you don't want auto shoot
+_G.ChangeValue = 10  
 
--- Send Notification
-StarterGui:SetCore("SendNotification", {
-    Title = "Anti-AFK & Anti Cherry Pick",
-    Text = "Script Activated",
-    Duration = 5
-})
+-- Anti-AFK
+local VirtualUser = game:GetService('VirtualUser')
+local StarterGui = game:GetService('StarterGui')
 
--- Prevent AFK Kick
-player.Idled:Connect(function()
+StarterGui:SetCore("SendNotification", { Title = "Anti C&A", Text = "Script Activated", Duration = 5 })
+
+game.Players.LocalPlayer.Idled:Connect(function()
     VirtualUser:CaptureController()
     VirtualUser:ClickButton2(Vector2.new())
 end)
 
--- Disable AFK Check in UI
+local args = {
+    [1] = "Change Ready Settings",
+    [2] = true
+}
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+local MainRE = Remotes:WaitForChild("Main.RE")
+
+-- Place check
+if game.PlaceId == 15297128281 then
+    print("In the correct place. Starting MainRE.")
+    while true do
+        MainRE:FireServer(unpack(args))
+        wait(1)
+    end
+else
+    print("Not in the correct place. Current PlaceId:", game.PlaceId)
+end
+
+-- Disable AFK Check
 local function disableAFKCheck()
     local function disableScriptInGui(gui)
         local afkCheckScript = gui:FindFirstChild("AFK.Check")
@@ -31,7 +51,7 @@ local function disableAFKCheck()
         disableScriptInGui(starterGuiAFKUi)
     end
 
-    local playerGuiAFKUi = player.PlayerGui:FindFirstChild("AFK.Ui")
+    local playerGuiAFKUi = game.Players.LocalPlayer.PlayerGui:FindFirstChild("AFK.Ui")
     if playerGuiAFKUi then
         disableScriptInGui(playerGuiAFKUi)
     end
@@ -39,17 +59,144 @@ end
 
 disableAFKCheck()
 
--- Anti Cherry Pick System
-local GameValues = ReplicatedStorage:WaitForChild("GameValues")
-local WarmupFinished = GameValues:WaitForChild("WarmupFinished")
+-- Power change handler
+local backpack = game.Players.LocalPlayer:WaitForChild("Backpack")
+local actionValues = backpack:WaitForChild("ActionValues")
+local power = actionValues:WaitForChild("Power")
 
-local PLACE_ID = 14269621394  -- Change this to match your game place
+local function onPowerChanged()
+    if power.Value >= _G.ChangeValue and _G.Xp and not _G.disableShooting then
+        local args = {
+            [1] = false,
+            [2] = "Shooting",
+            [3] = "Standing Shot"
+        }
+        local shotMultiplier = _G.Multiplier
+        local playerEvents = backpack:FindFirstChild("PlayerEvents") or ReplicatedStorage:FindFirstChild("PlayerEvents")
 
-if game.PlaceId ~= PLACE_ID then
-    return
+        if playerEvents then
+            local shootingEvent = playerEvents:FindFirstChild("Shooting")
+            if shootingEvent then
+                for i = 1, shotMultiplier do
+                    shootingEvent:FireServer(unpack(args))
+                end
+                print("Fired", shotMultiplier, "shots.")
+            end
+        end
+    end
 end
 
+power:GetPropertyChangedSignal("Value"):Connect(onPowerChanged)
+
+-- Disable shooting after warm-up
+local function disableShooting()
+    _G.Xp = false
+    _G.disableShooting = true
+    _G.AutoPlay = false
+    _G.AutoShoot = false
+    print("Shooting and AutoPlay have been disabled as the warm-up is finished.")
+end
+
+-- Warm-up finished handler
+local gameValues = ReplicatedStorage:WaitForChild("GameValues")
+local warmupFinished = gameValues:WaitForChild("WarmupFinished")
+
+if warmupFinished.Value == true then
+    print("Warm-up is finished!")
+    disableShooting()
+else
+    print("Warm-up is not finished yet.")
+end
+
+warmupFinished:GetPropertyChangedSignal("Value"):Connect(function()
+    if warmupFinished.Value == true then
+        print("Warm-up is finished now!")
+        disableShooting()
+    end
+end)
+
+-- Position walking and AutoShoot functionality
+local character = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local positions = {
+    Vector3.new(21, 4, -433),
+    Vector3.new(-47, 4, -434),
+    Vector3.new(21, 4, -408),
+    Vector3.new(-47, 4, -409)
+}
+
+local hasShot = false
+
+local function AutoShoot()
+    if not _G.AutoShoot or warmupFinished.Value or hasShot then
+        return
+    end
+
+    local ball = workspace:FindFirstChild("Balls") and workspace.Balls:FindFirstChild("Ball")
+    if ball then
+        wait(0.5)
+
+        local args = {
+            [1] = true,
+            [2] = "Shooting",
+            [3] = "Standing Shot"
+        }
+        ReplicatedStorage:WaitForChild("PlayerEvents"):WaitForChild("Shooting"):FireServer(unpack(args))
+
+        hasShot = true
+        print("Shot fired. AutoShoot will be disabled.")
+    end
+end
+
+local function AutoPlay()
+    while _G.AutoPlay do
+        if warmupFinished.Value then
+            print("Warm-up is finished. AutoPlay will not walk to positions.")
+            return
+        end
+        walkToNearestPosition()
+        wait(2)
+    end
+end
+
+function walkToNearestPosition()
+    if game.PlaceId ~= 14269621394 or warmupFinished.Value then
+        return
+    end
+
+    local playerPosition = character.HumanoidRootPart.Position
+    local nearestPosition = nil
+    local minDistance = math.huge
+
+    for _, pos in pairs(positions) do
+        local distance = (pos - playerPosition).magnitude
+        if distance < minDistance then
+            nearestPosition = pos
+            minDistance = distance
+        end
+    end
+
+    if nearestPosition then
+        humanoid:MoveTo(nearestPosition)
+        humanoid.MoveToFinished:Wait()
+        if _G.AutoShoot and not warmupFinished.Value and not hasShot then
+            AutoShoot()
+        end
+    end
+end
+
+if _G.AutoPlay then
+    AutoPlay()
+end
+
+if _G.AutoShoot and not warmupFinished.Value and not hasShot then
+    AutoShoot()
+end
+
+-- Move to position after warm-up
 local function moveToPosition(position)
+    local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoid = character:WaitForChild("Humanoid")
 
@@ -59,20 +206,20 @@ end
 
 local function checkAndMove()
     while true do
-        if WarmupFinished.Value == true then
+        if warmupFinished.Value == true then
             print("Warmup Finished, Enabling Anti Cherry Pick")
 
-            wait(95)  -- Wait before enforcing movement
+            wait(95)
 
-            local originalPosition = Vector3.new(-23, 4, -416) -- Set a return position
+            local originalPosition = Vector3.new(-23, 4, -416)
             moveToPosition(originalPosition)
 
             wait(25)
 
+            local player = game.Players.LocalPlayer
             local humanoidRootPart = player.Character:WaitForChild("HumanoidRootPart")
             local currentPosition = humanoidRootPart.Position
 
-            -- If the player moved away, force return
             if (currentPosition - originalPosition).Magnitude > 1 then
                 wait(32)
                 moveToPosition(originalPosition)
