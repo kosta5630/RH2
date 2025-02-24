@@ -1,6 +1,6 @@
 _G.Xp = true
 _G.disableShooting = false
-_G.Multiplier = 100 
+_G.Multiplier = 475
 _G.AutoPlay = true
 _G.AutoShoot = true -- turn this to false if you don't want auto shoot
 _G.ChangeValue = 10  
