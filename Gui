@@ -40,14 +40,14 @@ local MainTab = Window:CreateTab("Main", nil) -- Title, Image
 local MainSection = MainTab:CreateSection("Useful") -- Changed 'Tab' to 'MainTab'
 
 local Toggle = MainTab:CreateToggle({
-    Name = "XP",
+    Name = "Auto Timer ( No quick draw )",
     CurrentValue = false,
-    Flag = "XP_Toggle",
+    Flag = "AT_Toggle",
     Callback = function(Value)
         _G.ShootingEnabled = Value -- Store toggle state globally
 
         if Value then
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/RH2/refs/heads/main/Xp%20Farm"))();
-        end
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/RH2/refs/heads/main/Auto%20T"))();
+         end
     end,
 })
