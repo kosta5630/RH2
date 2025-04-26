@@ -68,12 +68,12 @@ local Toggle = MainTab:CreateToggle({
 local Toggle = MainTab:CreateToggle({
     Name = "Auto Timer ( Silver quick draw )",
     CurrentValue = false,
-    Flag = "AT1_Toggle",
+    Flag = "AT2_Toggle",
     Callback = function(Value)
         _G.ShootingEnabled = Value -- Store toggle state globally
 
         if Value then
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/RH2/refs/heads/main/Auto%20Timer%20Bronze%20QD"))();
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/RH2/refs/heads/main/Silver%20QD%20Auto%20timer"))();
          end
     end,
 })
@@ -81,12 +81,12 @@ local Toggle = MainTab:CreateToggle({
 local Toggle = MainTab:CreateToggle({
     Name = "Auto Timer ( gold quick draw )",
     CurrentValue = false,
-    Flag = "AT1_Toggle",
+    Flag = "AT3_Toggle",
     Callback = function(Value)
         _G.ShootingEnabled = Value -- Store toggle state globally
 
         if Value then
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/RH2/refs/heads/main/Auto%20Timer%20Bronze%20QD"))();
-         end
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/RH2/refs/heads/main/GOLD%20QD%20Auto%20timer"))();
+        end
     end,
 })
