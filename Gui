@@ -92,7 +92,7 @@ local Toggle = MainTab:CreateToggle({
 })
 
 local Toggle = MainTab:CreateToggle({
-    Name = "XP Script",
+    Name = "Auto XP",
     CurrentValue = false,
     Flag = "XP_Toggle",
     Callback = function(Value)
