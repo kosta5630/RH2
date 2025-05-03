@@ -1,0 +1,22 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PhysicalEvent = ReplicatedStorage:WaitForChild("PlayerEvents"):WaitForChild("Physical")
+
+-- Fire the "Block" event on yourself to gain XP
+local function triggerBlockXP()
+    local character = LocalPlayer.Character
+    if character and character:FindFirstChild("RightHand") then
+        PhysicalEvent:FireServer(true, "Block", character, character:FindFirstChild("RightHand"))
+        print("Fired Block event on self.")
+    else
+        warn("Character or RightHand missing.")
+    end
+end
+
+-- Auto XP farm loop
+_G.Xp = true -- Set this to false to stop
+while _G.Xp do
+    triggerBlockXP()
+    wait(2) -- Adjust as needed
+end
