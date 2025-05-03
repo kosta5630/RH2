@@ -1,0 +1,17 @@
+-- Anti-AFK Script
+local VirtualUser = game:GetService("VirtualUser")
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+
+-- Notify when Anti-AFK is activated
+StarterGui:SetCore("SendNotification", {
+    Title = "Anti-AFK",
+    Text = "You will no longer be kicked for being idle.",
+    Duration = 5
+})
+
+-- Trigger input to prevent AFK kick
+Players.LocalPlayer.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new())
+end)
