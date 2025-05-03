@@ -96,10 +96,24 @@ local Toggle = MainTab:CreateToggle({
     CurrentValue = false,
     Flag = "XP_Toggle",
     Callback = function(Value)
-        _G.ShootingEnabled = Value -- Store toggle state globally
-
+        -- When toggled on
         if Value then
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/RH2/refs/heads/main/GOLD%20QD%20Auto%20timer"))();
+            _G.Xp = true -- Start the XP farming loop
+            while _G.Xp do
+                local character = game.Players.LocalPlayer.Character
+                if character and character:FindFirstChild("RightHand") then
+                    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                    local PhysicalEvent = ReplicatedStorage:WaitForChild("PlayerEvents"):WaitForChild("Physical")
+                    PhysicalEvent:FireServer(true, "Block", character, character:FindFirstChild("RightHand"))
+                    print("Fired Block event on self.")
+                else
+                    warn("Character or RightHand missing.")
+                end
+                wait(2) -- Adjust as needed
+            end
+        else
+            _G.Xp = false -- Stop the XP farming loop when toggled off
+            print("XP farming disabled.")
         end
     end,
 })
