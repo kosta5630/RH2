@@ -92,7 +92,7 @@ local Toggle = MainTab:CreateToggle({
 })
 
 local Toggle = MainTab:CreateToggle({
-    Name = "dont use ( instant ban / detected )",
+    Name = "XP Script",
     CurrentValue = false,
     Flag = "XP_Toggle",
     Callback = function(Value)
@@ -105,7 +105,7 @@ local Toggle = MainTab:CreateToggle({
                     local ReplicatedStorage = game:GetService("ReplicatedStorage")
                     local PhysicalEvent = ReplicatedStorage:WaitForChild("PlayerEvents"):WaitForChild("Physical")
                     PhysicalEvent:FireServer(true, "Block", character, character:FindFirstChild("RightHand"))
-                    print("Fired Block event on self.")
+                    print("kosta did this.")
                 else
                     warn("Character or RightHand missing.")
                 end
