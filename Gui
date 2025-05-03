@@ -90,3 +90,16 @@ local Toggle = MainTab:CreateToggle({
         end
     end,
 })
+
+local Toggle = MainTab:CreateToggle({
+    Name = "dont use ( instant ban / detected )",
+    CurrentValue = false,
+    Flag = "XP_Toggle",
+    Callback = function(Value)
+        _G.ShootingEnabled = Value -- Store toggle state globally
+
+        if Value then
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/RH2/refs/heads/main/GOLD%20QD%20Auto%20timer"))();
+        end
+    end,
+})
