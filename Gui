@@ -91,28 +91,29 @@ local Toggle = MainTab:CreateToggle({
     end,
 })
 
-local Toggle = MainTab:CreateToggle({
+MainTab:CreateToggle({
     Name = "Auto XP",
     CurrentValue = false,
     Flag = "XP_Toggle",
     Callback = function(Value)
-        -- When toggled on
         if Value then
-            _G.Xp = true -- Start the XP farming loop
-            while _G.Xp do
-                local character = game.Players.LocalPlayer.Character
-                if character and character:FindFirstChild("RightHand") then
-                    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-                    local PhysicalEvent = ReplicatedStorage:WaitForChild("PlayerEvents"):WaitForChild("Physical")
-                    PhysicalEvent:FireServer(true, "Block", character, character:FindFirstChild("RightHand"))
-                    print("kosta did this.")
-                else
-                    warn("Character or RightHand missing.")
+            _G.Xp = true
+            task.spawn(function()
+                while _G.Xp do
+                    local character = game.Players.LocalPlayer.Character
+                    if character and character:FindFirstChild("LeftHand") then
+                        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                        local PhysicalEvent = ReplicatedStorage:WaitForChild("PlayerEvents"):WaitForChild("Physical")
+                        PhysicalEvent:FireServer(true, "Steal", character, character:FindFirstChild("LeftHand"))
+                        print("kosta did it.")
+                    else
+                        warn("Character or LeftHand missing.")
+                    end
+                    task.wait(2)
                 end
-                wait(2) -- Adjust as needed
-            end
+            end)
         else
-            _G.Xp = false -- Stop the XP farming loop when toggled off
+            _G.Xp = false
             print("XP farming disabled.")
         end
     end,
