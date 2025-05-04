@@ -32,7 +32,6 @@ local ShotTypes = {
     ["Post Fade"] = 0.571,
 }
 
-
 local QuickDrawTier
 task.delay(0.1, function()
     for _, v in next, getgc(true) do
@@ -52,7 +51,6 @@ task.delay(0.1, function()
     end
 end)
 
-
 function AdjustOnPing(Timing, ShotType)
     if Timing then
         local AdjustedTiming = math.max(Timing - (game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue() / 1000), 0)
@@ -63,10 +61,10 @@ function AdjustOnPing(Timing, ShotType)
     end
 end
 
-
 local DunkType
 local ShotType
 local name
+local isShooting = false
 name = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
     local method = getnamecallmethod()
     local args = { ... }
@@ -80,19 +78,26 @@ name = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
     return name(self, ...)
 end))
 
-
 Values.HandValue.Changed:Connect(function()
     if Values.HandValue.Value == "Shooting" then
-        local Timing = AdjustOnPing(ShotTypes[ShotType], ShotType)
-        if Timing then
-            task.wait(Timing)
-            PlayerEvents.Shooting:FireServer(false, "Shooting", ShotType)
+        if not isShooting then
+            isShooting = true
+            local Timing = AdjustOnPing(ShotTypes[ShotType], ShotType)
+            if Timing then
+                task.wait(Timing)
+                PlayerEvents.Shooting:FireServer(false, "Shooting", ShotType)
+            end
+            isShooting = false
         end
     elseif Values.HandValue.Value == "Dunking" then
-        local Timing = AdjustOnPing(ShotTypes[DunkType], DunkType)
-        if Timing then
-            task.wait(Timing)
-            PlayerEvents.Shooting:FireServer(false, DunkType, 1)
+        if not isShooting then
+            isShooting = true
+            local Timing = AdjustOnPing(ShotTypes[DunkType], DunkType)
+            if Timing then
+                task.wait(Timing)
+                PlayerEvents.Shooting:FireServer(false, DunkType, 1)
+            end
+            isShooting = false
         end
     end
 end)
