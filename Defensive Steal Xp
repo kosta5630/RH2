@@ -1,0 +1,29 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PhysicalEvent = ReplicatedStorage:WaitForChild("PlayerEvents"):WaitForChild("Physical")
+
+-- Fire the "Steal" event on self to gain XP
+local function triggerStealXP()
+    local character = LocalPlayer.Character
+
+    if character and character:FindFirstChild("LeftHand") then
+        local args = {
+            true,
+            "Steal",
+            character,
+            character:FindFirstChild("LeftHand")
+        }
+        PhysicalEvent:FireServer(unpack(args))
+        print("Fired Steal event on self.")
+    else
+        warn("Character or LeftHand missing.")
+    end
+end
+
+-- Auto XP farm loop
+_G.Xp = true -- Set this to false to stop
+while _G.Xp do
+    triggerStealXP()
+    wait(2) -- Adjust delay if needed
+end
