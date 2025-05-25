@@ -19,19 +19,18 @@ local QuickDrawTimings = {
 }
 
 local ShotTypes = {
-    ["Standing Shot"] = 0.5612,
-    ["Moving Shot"] = 0.6734424,
+    ["Standing Shot"] = 0.5412,
+    ["Moving Shot"] = 0.6934424,
     ["Close Floater"] = 0.3575,
     ["Floater"] = 0.3702,
     ["Layup"] = 0.4603,
     ["Standing Layup"] = 0.459,
     ["Reverse Layup"] = 0.6287178,
     ["Moving Dunk"] = 0.511,
-    ["Standing Dunk"] = 0.467,
+    ["Standing Dunk"] = 0.567,
     ["Close Post Fade"] = 0.93,
     ["Post Fade"] = 0.571,
 }
-
 
 local QuickDrawTier
 task.delay(0.1, function()
@@ -52,7 +51,6 @@ task.delay(0.1, function()
     end
 end)
 
-
 function AdjustOnPing(Timing, ShotType)
     if Timing then
         local AdjustedTiming = math.max(Timing - (game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue() / 1000), 0)
@@ -62,7 +60,6 @@ function AdjustOnPing(Timing, ShotType)
         return AdjustedTiming
     end
 end
-
 
 local DunkType
 local ShotType
@@ -80,19 +77,31 @@ name = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
     return name(self, ...)
 end))
 
+local debounce = false
 
 Values.HandValue.Changed:Connect(function()
+    if debounce then return end
+
     if Values.HandValue.Value == "Shooting" then
+        debounce = true
         local Timing = AdjustOnPing(ShotTypes[ShotType], ShotType)
         if Timing then
             task.wait(Timing)
             PlayerEvents.Shooting:FireServer(false, "Shooting", ShotType)
         end
+        task.delay(0.5, function()
+            debounce = false
+        end)
+
     elseif Values.HandValue.Value == "Dunking" then
+        debounce = true
         local Timing = AdjustOnPing(ShotTypes[DunkType], DunkType)
         if Timing then
             task.wait(Timing)
             PlayerEvents.Shooting:FireServer(false, DunkType, 1)
         end
+        task.delay(0.5, function()
+            debounce = false
+        end)
     end
 end)
