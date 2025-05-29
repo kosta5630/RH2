@@ -68,7 +68,7 @@ RunService.RenderStepped:Connect(function()
 		if CurrentTarget and CurrentTarget.Character and CurrentTarget.Character:FindFirstChild("HumanoidRootPart") then
 			local targetHRP = CurrentTarget.Character.HumanoidRootPart
 			local forwardVec = targetHRP.CFrame.LookVector
-			local targetPosition = targetHRP.Position + forwardVec * 3
+			local targetPosition = targetHRP.Position + forwardVec * 5
 
 			local moveDirection = (targetPosition - HumanoidRootPart.Position).Unit
 			Humanoid:Move(moveDirection, false)
