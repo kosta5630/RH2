@@ -20,7 +20,7 @@ local QuickDrawTimings = {
 
 local ShotTypes = {
     ["Standing Shot"] = 0.5182,
-    ["Moving Shot"] = 0.6734424,
+    ["Moving Shot"] = 0.6934424,
     ["Close Floater"] = 0.3575,
     ["Floater"] = 0.3702,
     ["Layup"] = 0.4603,
