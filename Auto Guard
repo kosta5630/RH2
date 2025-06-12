@@ -1,77 +1,87 @@
--- GUI Setup (Aesthetic + Moveable)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+
+local Character = nil
+local HumanoidRootPart = nil
+local Humanoid = nil
+
+local AutoGuardOn = false
+local CurrentTarget = nil
+
+-- GUI Setup
 local Gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
 Gui.Name = "AutoGuardGUI"
 Gui.ResetOnSpawn = false
 
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 160, 0, 50)
-ToggleButton.Position = UDim2.new(0, 20, 0, 20)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+-- Draggable Frame Holder
+local DragFrame = Instance.new("Frame", Gui)
+DragFrame.Size = UDim2.new(0, 130, 0, 40)
+DragFrame.Position = UDim2.new(0, 10, 0, 10)
+DragFrame.BackgroundTransparency = 1
+DragFrame.Active = true
+DragFrame.Draggable = true
+
+-- Button inside the frame
+local ToggleButton = Instance.new("TextButton", DragFrame)
+ToggleButton.Size = UDim2.new(1, 0, 1, 0)
+ToggleButton.Position = UDim2.new(0, 0, 0, 0)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 ToggleButton.TextColor3 = Color3.new(1, 1, 1)
-ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.Font = Enum.Font.SourceSansBold
 ToggleButton.TextScaled = true
 ToggleButton.Text = "AutoGuard: OFF"
-ToggleButton.Parent = Gui
 
--- Aesthetic additions
-local corner = Instance.new("UICorner", ToggleButton)
-corner.CornerRadius = UDim.new(0, 12)
-
-local shadow = Instance.new("UIStroke", ToggleButton)
-shadow.Color = Color3.fromRGB(0, 0, 0)
-shadow.Thickness = 1.5
-shadow.Transparency = 0.5
-
--- Toggle logic with animation
+-- Button Logic
 ToggleButton.MouseButton1Click:Connect(function()
 	AutoGuardOn = not AutoGuardOn
 	ToggleButton.Text = "AutoGuard: " .. (AutoGuardOn and "ON" or "OFF")
-
-	local newColor = AutoGuardOn and Color3.fromRGB(60, 170, 80) or Color3.fromRGB(170, 60, 60)
-
-	TweenService:Create(
-		ToggleButton,
-		TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-		{BackgroundColor3 = newColor}
-	):Play()
-
 	if not AutoGuardOn then
 		CurrentTarget = nil
 	end
 end)
 
--- Make Button Moveable
-local dragging = false
-local dragInput, dragStart, startPos
-
-ToggleButton.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
-		startPos = ToggleButton.Position
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
+-- Get Closest Player
+local function GetClosestPlayer()
+	local closest = nil
+	local minDist = math.huge
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			local dist = (player.Character.HumanoidRootPart.Position - HumanoidRootPart.Position).Magnitude
+			if dist < minDist then
+				minDist = dist
+				closest = player
 			end
-		end)
+		end
 	end
-end)
+	return closest
+end
 
-ToggleButton.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement then
-		dragInput = input
-	end
-end)
+-- Update Character References
+local function UpdateCharacter()
+	Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+	Humanoid = Character:WaitForChild("Humanoid")
+end
 
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
-		local delta = input.Position - dragStart
-		ToggleButton.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
+LocalPlayer.CharacterAdded:Connect(UpdateCharacter)
+if LocalPlayer.Character then UpdateCharacter() end
+
+-- Auto Guard Loop
+RunService.RenderStepped:Connect(function()
+	if AutoGuardOn and Character and HumanoidRootPart and Humanoid then
+		if not CurrentTarget or not CurrentTarget.Character or not CurrentTarget.Character:FindFirstChild("HumanoidRootPart") then
+			CurrentTarget = GetClosestPlayer()
+		end
+
+		if CurrentTarget and CurrentTarget.Character and CurrentTarget.Character:FindFirstChild("HumanoidRootPart") then
+			local targetHRP = CurrentTarget.Character.HumanoidRootPart
+			local forwardVec = targetHRP.CFrame.LookVector
+			local targetPosition = targetHRP.Position + forwardVec * 5
+
+			local moveDirection = (targetPosition - HumanoidRootPart.Position).Unit
+			Humanoid:Move(moveDirection, false)
+		end
 	end
 end)
