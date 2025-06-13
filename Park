@@ -1,0 +1,135 @@
+local Player = game.Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+
+local Values = Player:WaitForChild("Backpack"):WaitForChild("PlayerValues")
+local PlayerEvents = game:GetService("ReplicatedStorage"):WaitForChild("PlayerEvents")
+local StatsService = game:GetService("Stats")
+
+local QuickDrawList = { "Bronze", "Silver", "Gold", "HoF" }
+
+local QuickDrawTimings = {
+    ["Bronze"] = 0,
+    ["Silver"] = 0,
+    ["Gold"] = 0,
+    ["HoF"] = 0,
+}
+
+local ShotTypes = {
+    ["Standing Shot"] = 0.5412,
+    ["Moving Shot"] = 0.6934424,
+    ["Close Floater"] = 0.3575,
+    ["Floater"] = 0.3702,
+    ["Layup"] = 0.4603,
+    ["Standing Layup"] = 0.459,
+    ["Reverse Layup"] = 0.6287178,
+    ["Moving Dunk"] = 0.511,
+    ["Standing Dunk"] = 0.567,
+    ["Close Post Fade"] = 0.93,
+    ["Post Fade"] = 0.571,
+}
+
+-- Smooth ping history
+local pingSamples = {}
+local function getSmoothedPing()
+    local rawPing = StatsService.Network.ServerStatsItem["Data Ping"]:GetValue()
+    table.insert(pingSamples, rawPing)
+    if #pingSamples > 5 then
+        table.remove(pingSamples, 1)
+    end
+    local total = 0
+    for _, v in ipairs(pingSamples) do
+        total += v
+    end
+    return (total / #pingSamples)
+end
+
+local QuickDrawTier
+task.delay(0.1, function()
+    for _, v in next, getgc(true) do
+        if type(v) == "table" then
+            for i2, v2 in pairs(v) do
+                if i2 == "Badges" or v2 == "Badges" then
+                    if type(v2) == "table" then
+                        for i3, v3 in pairs(v2) do
+                            if i3 == "QuickDraw" and table.find(QuickDrawList, v3) then
+                                QuickDrawTier = v3
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+function AdjustOnPing(Timing, ShotType)
+    if Timing then
+        local ping = getSmoothedPing()
+        local AdjustedTiming = math.max(Timing - (ping / 1000), 0)
+        if QuickDrawTier and QuickDrawTier ~= "Locked" and ShotType == "Standing Shot" then
+            AdjustedTiming -= QuickDrawTimings[QuickDrawTier]
+        end
+        return AdjustedTiming
+    end
+end
+
+local DunkType
+local ShotType
+local name
+name = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
+    local method = getnamecallmethod()
+    local args = { ... }
+    if method == "FireServer" and self.Name == "Shooting" then
+        ShotType = args[3]
+        if type(args[3]) ~= "string" then
+            DunkType = args[2]
+        end
+        return name(self, unpack(args))
+    end
+    return name(self, ...)
+end))
+
+local debounce = false
+
+local function onValueChanged()
+    if debounce then return end
+
+    local state = Values.HandValue.Value
+    if state == "Shooting" and ShotType then
+        debounce = true
+        local success, timing = pcall(AdjustOnPing, ShotTypes[ShotType], ShotType)
+        if success and timing then
+            task.wait(timing)
+            pcall(function()
+                PlayerEvents.Shooting:FireServer(false, "Shooting", ShotType)
+            end)
+        end
+        task.delay(0.5, function() debounce = false end)
+
+    elseif state == "Dunking" and DunkType then
+        debounce = true
+        local success, timing = pcall(AdjustOnPing, ShotTypes[DunkType], DunkType)
+        if success and timing then
+            task.wait(timing)
+            pcall(function()
+                PlayerEvents.Shooting:FireServer(false, DunkType, 1)
+            end)
+        end
+        task.delay(2, function() debounce = false end)
+    end
+end
+
+-- Reconnect signal in case of character respawn
+local function setupConnection()
+    Values.HandValue.Changed:Connect(onValueChanged)
+end
+
+setupConnection()
+
+-- Re-setup when character resets
+Player.CharacterAdded:Connect(function()
+    task.wait(1)
+    Character = Player.Character
+    Values = Player:WaitForChild("Backpack"):WaitForChild("PlayerValues")
+    setupConnection()
+end)
