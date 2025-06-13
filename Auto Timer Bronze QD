@@ -100,7 +100,7 @@ Values.HandValue.Changed:Connect(function()
             task.wait(Timing)
             PlayerEvents.Shooting:FireServer(false, DunkType, 1)
         end
-        task.delay(0.5, function()
+        task.delay(2, function()
             debounce = false
         end)
     end
