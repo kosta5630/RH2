@@ -5,10 +5,7 @@ local Values = Player:WaitForChild("Backpack"):WaitForChild("PlayerValues")
 local PlayerEvents = game:GetService("ReplicatedStorage"):WaitForChild("PlayerEvents")
 
 local QuickDrawList = {
-    "Bronze",
-    "Silver",
-    "Gold",
-    "HoF"
+    "Bronze", "Silver", "Gold", "HoF"
 }
 
 local QuickDrawTimings = {
@@ -32,7 +29,6 @@ local ShotTypes = {
     ["Post Fade"] = 0.571,
 }
 
-
 local QuickDrawTier
 task.delay(0.1, function()
     for _, v in next, getgc(true) do
@@ -52,7 +48,6 @@ task.delay(0.1, function()
     end
 end)
 
-
 function AdjustOnPing(Timing, ShotType)
     if Timing then
         local AdjustedTiming = math.max(Timing - (game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue() / 1000), 0)
@@ -63,7 +58,7 @@ function AdjustOnPing(Timing, ShotType)
     end
 end
 
-
+-- Hook namecall to capture shot/dunk type
 local DunkType
 local ShotType
 local name
@@ -80,8 +75,13 @@ name = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
     return name(self, ...)
 end))
 
+-- Debounce variable
+local debounce = false
 
 Values.HandValue.Changed:Connect(function()
+    if debounce then return end
+    debounce = true
+
     if Values.HandValue.Value == "Shooting" then
         local Timing = AdjustOnPing(ShotTypes[ShotType], ShotType)
         if Timing then
@@ -95,4 +95,9 @@ Values.HandValue.Changed:Connect(function()
             PlayerEvents.Shooting:FireServer(false, DunkType, 1)
         end
     end
+
+    -- Reset debounce after a short delay to allow next shot
+    task.delay(3, function()
+        debounce = false
+    end)
 end)
