@@ -12,7 +12,7 @@ frame.Position = UDim2.new(0.5, -125, 0.5, -75)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 0
 frame.Active = true
-frame.Draggable = true  -- Enable dragging on the whole frame
+frame.Draggable = true  -- Make GUI draggable
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 30)
@@ -42,12 +42,6 @@ runButton.Font = Enum.Font.SourceSansBold
 runButton.TextSize = 16
 
 --// Remote Event Setup
-local args = {
-    [1] = true,
-    [2] = "Shooting",
-    [3] = "Standing Shot"
-}
-
 local event = game:GetService("ReplicatedStorage"):WaitForChild("PlayerEvents"):WaitForChild("Shooting")
 
 --// Button click behavior
@@ -55,9 +49,15 @@ runButton.MouseButton1Click:Connect(function()
     local count = tonumber(inputBox.Text)
     if count and count >= 1 and count <= 30 then
         for i = 1, count do
+            local args = {
+                true,
+                "Shooting",
+                "Moving Shot",
+                "Right"
+            }
             event:FireServer(unpack(args))
         end
-        screenGui:Destroy() -- Remove GUI after running once
+        screenGui:Destroy() -- Remove GUI after use
     else
         inputBox.Text = "Invalid (1-30 only)"
     end
