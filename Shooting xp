@@ -1,0 +1,64 @@
+--// GUI Setup
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui", playerGui)
+screenGui.Name = "ShootingXP_GUI"
+screenGui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", screenGui)
+frame.Size = UDim2.new(0, 250, 0, 150)
+frame.Position = UDim2.new(0.5, -125, 0.5, -75)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true  -- Enable dragging on the whole frame
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+title.Text = "Shooting XP Multiplier"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 18
+
+local inputBox = Instance.new("TextBox", frame)
+inputBox.Size = UDim2.new(0.8, 0, 0, 30)
+inputBox.Position = UDim2.new(0.1, 0, 0.4, 0)
+inputBox.PlaceholderText = "Enter number of shots (1-30)"
+inputBox.Text = ""
+inputBox.TextColor3 = Color3.new(0, 0, 0)
+inputBox.Font = Enum.Font.SourceSans
+inputBox.TextSize = 16
+
+local runButton = Instance.new("TextButton", frame)
+runButton.Size = UDim2.new(0.8, 0, 0, 30)
+runButton.Position = UDim2.new(0.1, 0, 0.75, 0)
+runButton.Text = "Run"
+runButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+runButton.TextColor3 = Color3.new(1, 1, 1)
+runButton.Font = Enum.Font.SourceSansBold
+runButton.TextSize = 16
+
+--// Remote Event Setup
+local args = {
+    [1] = true,
+    [2] = "Shooting",
+    [3] = "Standing Shot"
+}
+
+local event = game:GetService("ReplicatedStorage"):WaitForChild("PlayerEvents"):WaitForChild("Shooting")
+
+--// Button click behavior
+runButton.MouseButton1Click:Connect(function()
+    local count = tonumber(inputBox.Text)
+    if count and count >= 1 and count <= 30 then
+        for i = 1, count do
+            event:FireServer(unpack(args))
+        end
+        screenGui:Destroy() -- Remove GUI after running once
+    else
+        inputBox.Text = "Invalid (1-30 only)"
+    end
+end)
