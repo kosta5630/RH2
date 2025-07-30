@@ -104,12 +104,18 @@ MainTab:CreateToggle({
                     if character and character:FindFirstChild("LeftHand") then
                         local ReplicatedStorage = game:GetService("ReplicatedStorage")
                         local PhysicalEvent = ReplicatedStorage:WaitForChild("PlayerEvents"):WaitForChild("Physical")
-                        PhysicalEvent:FireServer(true, "Steal", character, character:FindFirstChild("LeftHand"))
-                        print("kosta did it.")
+
+                        -- Fire the event 10 times quickly
+                        for i = 1, 10 do
+                            PhysicalEvent:FireServer(true, "Steal", character, character:FindFirstChild("LeftHand"))
+                        end
+
+                        print("Fired steal event 10x.")
                     else
                         warn("Character or LeftHand missing.")
                     end
-                    task.wait(2)
+
+                    task.wait(0.1) -- Wait between each batch
                 end
             end)
         else
