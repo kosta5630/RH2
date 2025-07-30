@@ -1,61 +1,112 @@
---// GUI Setup local Players = game:GetService("Players") local ReplicatedStorage = game:GetService("ReplicatedStorage") local LocalPlayer = Players.LocalPlayer local PlayerGui = LocalPlayer:WaitForChild("PlayerGui") local ScreenGui = Instance.new("ScreenGui") ScreenGui.Name = "BadgeProgressionGUI" ScreenGui.Parent = PlayerGui
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
 
---// Main Frame local MainFrame = Instance.new("Frame") MainFrame.Size = UDim2.new(0, 300, 0, 200) MainFrame.Position = UDim2.new(0.05, 0, 0.1, 0) MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) MainFrame.BorderSizePixel = 2 MainFrame.Parent = ScreenGui MainFrame.Active = true MainFrame.Draggable = true
+-- Create GUI in CoreGui so it works with executors
+local gui = Instance.new("ScreenGui")
+gui.Name = "BadgeGUI"
+gui.Parent = game:GetService("CoreGui")
+gui.ResetOnSpawn = false
 
---// Title Bar local TitleBar = Instance.new("Frame") TitleBar.Size = UDim2.new(1, 0, 0, 30) TitleBar.BackgroundColor3 = Color3.fromRGB(0, 85, 255) TitleBar.Parent = MainFrame
+-- Main frame
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 300, 0, 200)
+main.Position = UDim2.new(0, 20, 0, 100)
+main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+main.BorderSizePixel = 2
+main.Active = true
+main.Draggable = true
+main.Parent = gui
 
-local TitleLabel = Instance.new("TextLabel") TitleLabel.Size = UDim2.new(1, 0, 1, 0) TitleLabel.BackgroundTransparency = 1 TitleLabel.Text = "Vision Badge Progression Status" TitleLabel.TextColor3 = Color3.new(1, 1, 1) TitleLabel.Font = Enum.Font.GothamBold TitleLabel.TextSize = 14 TitleLabel.Parent = TitleBar
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundColor3 = Color3.fromRGB(0, 85, 255)
+title.Text = "Vision Badge Progression Status"
+title.TextColor3 = Color3.new(1,1,1)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 14
+title.Parent = main
 
---// Stat Labels local function createStat(name, yPos) local label = Instance.new("TextLabel") label.Name = name .. "Label" label.Size = UDim2.new(1, -20, 0, 20) label.Position = UDim2.new(0, 10, 0, yPos) label.BackgroundTransparency = 1 label.TextColor3 = Color3.new(1, 1, 1) label.Font = Enum.Font.Gotham label.TextSize = 13 label.Text = name .. " EXP: 0" label.TextXAlignment = Enum.TextXAlignment.Left label.Parent = MainFrame return label end
+-- Function to create stat label
+local function makeLabel(statName, yPos)
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, -20, 0, 20)
+    lbl.Position = UDim2.new(0, 10, 0, yPos)
+    lbl.BackgroundTransparency = 1
+    lbl.TextColor3 = Color3.new(1, 1, 1)
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextSize = 13
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Text = statName .. " EXP: 0"
+    lbl.Parent = main
+    return lbl
+end
 
-local statLabels = { Shooting = createStat("Shooting", 40), Playmaking = createStat("Playmaking", 65), Finishing = createStat("Finishing", 90), ["Defending/Rebounding"] = createStat("Defending/Rebounding", 115) }
+local labels = {
+    Shooting = makeLabel("Shooting", 40),
+    Playmaking = makeLabel("Playmaking", 65),
+    Finishing = makeLabel("Finishing", 90),
+    ["Defending/Rebounding"] = makeLabel("Defending/Rebounding", 115)
+}
 
---// Dropdown Box local dropdown = Instance.new("TextButton") dropdown.Size = UDim2.new(1, -20, 0, 25) dropdown.Position = UDim2.new(0, 10, 0, 150) dropdown.Text = "Select Player" dropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 40) dropdown.TextColor3 = Color3.new(1, 1, 1) dropdown.Font = Enum.Font.GothamBold dropdown.TextSize = 13 dropdown.Parent = MainFrame
+-- Dropdown
+local dropdown = Instance.new("TextButton")
+dropdown.Size = UDim2.new(1, -20, 0, 25)
+dropdown.Position = UDim2.new(0, 10, 0, 150)
+dropdown.Text = "Select Player"
+dropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+dropdown.TextColor3 = Color3.new(1, 1, 1)
+dropdown.Font = Enum.Font.GothamBold
+dropdown.TextSize = 13
+dropdown.Parent = main
 
-local dropFrame = Instance.new("Frame") dropFrame.Size = UDim2.new(1, 0, 0, 100) dropFrame.Position = UDim2.new(0, 0, 1, 0) dropFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25) dropFrame.Visible = false dropFrame.Parent = dropdown
+local dropFrame = Instance.new("Frame")
+dropFrame.Size = UDim2.new(1, 0, 0, 100)
+dropFrame.Position = UDim2.new(0, 0, 1, 0)
+dropFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+dropFrame.Visible = false
+dropFrame.Parent = dropdown
 
-local uiList = Instance.new("UIListLayout") uiList.Parent = dropFrame uiList.SortOrder = Enum.SortOrder.LayoutOrder
+local uiList = Instance.new("UIListLayout")
+uiList.Parent = dropFrame
 
---// Toggle Dropdown dropdown.MouseButton1Click:Connect(function() dropFrame.Visible = not dropFrame.Visible end)
+-- Toggle dropdown
+dropdown.MouseButton1Click:Connect(function()
+    dropFrame.Visible = not dropFrame.Visible
+end)
 
---// Populate Player List local function updatePlayerList() dropFrame:ClearAllChildren() uiList.Parent = dropFrame
+-- Populate dropdown with players
+for _, val in pairs(ReplicatedStorage:WaitForChild("GameValues"):WaitForChild("Players"):GetChildren()) do
+    if val:IsA("StringValue") then
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 0, 20)
+        btn.Text = val.Name
+        btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        btn.TextColor3 = Color3.new(1, 1, 1)
+        btn.Font = Enum.Font.Gotham
+        btn.TextSize = 12
+        btn.Parent = dropFrame
 
-for _, playerValue in pairs(ReplicatedStorage:WaitForChild("GameValues"):WaitForChild("Players"):GetChildren()) do
-    if playerValue:IsA("StringValue") then
-        local button = Instance.new("TextButton")
-        button.Size = UDim2.new(1, 0, 0, 20)
-        button.Text = playerValue.Name
-        button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        button.TextColor3 = Color3.new(1, 1, 1)
-        button.Font = Enum.Font.Gotham
-        button.TextSize = 12
-        button.Parent = dropFrame
-
-        button.MouseButton1Click:Connect(function()
-            dropdown.Text = playerValue.Name
+        btn.MouseButton1Click:Connect(function()
+            dropdown.Text = val.Name
             dropFrame.Visible = false
-            
-            -- Start updating values
-            local badgeEXP = playerValue:FindFirstChild("BadgeEXP")
+
+            local badgeEXP = val:FindFirstChild("BadgeEXP")
             if badgeEXP then
-                for statName, label in pairs(statLabels) do
-                    local shortName = statName == "Defending/Rebounding" and "Defending_Rebounding" or statName
-                    local valObj = badgeEXP:FindFirstChild(shortName)
-                    if valObj then
-                        label.Text = statName .. " EXP: " .. valObj.Value
-                        valObj:GetPropertyChangedSignal("Value"):Connect(function()
-                            label.Text = statName .. " EXP: " .. valObj.Value
+                for labelName, uiLabel in pairs(labels) do
+                    local shortName = labelName == "Defending/Rebounding" and "Defending_Rebounding" or labelName
+                    local valueObj = badgeEXP:FindFirstChild(shortName)
+                    if valueObj and valueObj:IsA("IntValue") then
+                        uiLabel.Text = labelName .. " EXP: " .. valueObj.Value
+                        valueObj:GetPropertyChangedSignal("Value"):Connect(function()
+                            uiLabel.Text = labelName .. " EXP: " .. valueObj.Value
                         end)
                     else
-                        label.Text = statName .. " EXP: N/A"
+                        uiLabel.Text = labelName .. " EXP: N/A"
                     end
                 end
             end
         end)
     end
 end
-
-end
-
-updatePlayerList()
-
