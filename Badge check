@@ -1,14 +1,19 @@
+-- KRNL-SAFE LOADING
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 
--- Create GUI in CoreGui so it works with executors
+-- Make GUI inside CoreGui
 local gui = Instance.new("ScreenGui")
 gui.Name = "BadgeGUI"
 gui.Parent = game:GetService("CoreGui")
 gui.ResetOnSpawn = false
 
--- Main frame
+-- Main Frame
 local main = Instance.new("Frame")
 main.Size = UDim2.new(0, 300, 0, 200)
 main.Position = UDim2.new(0, 20, 0, 100)
@@ -18,17 +23,17 @@ main.Active = true
 main.Draggable = true
 main.Parent = gui
 
--- Title
+-- Title Bar
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 30)
 title.BackgroundColor3 = Color3.fromRGB(0, 85, 255)
 title.Text = "Vision Badge Progression Status"
-title.TextColor3 = Color3.new(1,1,1)
+title.TextColor3 = Color3.new(1, 1, 1)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
 title.Parent = main
 
--- Function to create stat label
+-- Function to create EXP stat labels
 local function makeLabel(statName, yPos)
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(1, -20, 0, 20)
@@ -43,6 +48,7 @@ local function makeLabel(statName, yPos)
     return lbl
 end
 
+-- Create labels
 local labels = {
     Shooting = makeLabel("Shooting", 40),
     Playmaking = makeLabel("Playmaking", 65),
@@ -50,7 +56,7 @@ local labels = {
     ["Defending/Rebounding"] = makeLabel("Defending/Rebounding", 115)
 }
 
--- Dropdown
+-- Dropdown setup
 local dropdown = Instance.new("TextButton")
 dropdown.Size = UDim2.new(1, -20, 0, 25)
 dropdown.Position = UDim2.new(0, 10, 0, 150)
@@ -76,8 +82,17 @@ dropdown.MouseButton1Click:Connect(function()
     dropFrame.Visible = not dropFrame.Visible
 end)
 
--- Populate dropdown with players
-for _, val in pairs(ReplicatedStorage:WaitForChild("GameValues"):WaitForChild("Players"):GetChildren()) do
+-- Fetch player data
+local GameValues = ReplicatedStorage:WaitForChild("GameValues", 10)
+local PlayersFolder = GameValues and GameValues:WaitForChild("Players", 10)
+
+if not PlayersFolder then
+    warn("Could not find GameValues > Players.")
+    return
+end
+
+-- Populate dropdown
+for _, val in pairs(PlayersFolder:GetChildren()) do
     if val:IsA("StringValue") then
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(1, 0, 0, 20)
@@ -95,7 +110,7 @@ for _, val in pairs(ReplicatedStorage:WaitForChild("GameValues"):WaitForChild("P
             local badgeEXP = val:FindFirstChild("BadgeEXP")
             if badgeEXP then
                 for labelName, uiLabel in pairs(labels) do
-                    local shortName = labelName == "Defending/Rebounding" and "Defending_Rebounding" or labelName
+                    local shortName = (labelName == "Defending/Rebounding") and "Defending_Rebounding" or labelName
                     local valueObj = badgeEXP:FindFirstChild(shortName)
                     if valueObj and valueObj:IsA("IntValue") then
                         uiLabel.Text = labelName .. " EXP: " .. valueObj.Value
@@ -105,6 +120,10 @@ for _, val in pairs(ReplicatedStorage:WaitForChild("GameValues"):WaitForChild("P
                     else
                         uiLabel.Text = labelName .. " EXP: N/A"
                     end
+                end
+            else
+                for labelName, uiLabel in pairs(labels) do
+                    uiLabel.Text = labelName .. " EXP: N/A"
                 end
             end
         end)
