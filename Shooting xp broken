@@ -5,7 +5,7 @@ local backpack = player:WaitForChild("Backpack")
 local actionValues = backpack:WaitForChild("ActionValues")
 local power = actionValues:WaitForChild("Power")
 
-local powerThreshold = 65
+local powerThreshold = 60
 local shotMultiplier = 300
 local firingEnabled = false
 local fired = false
