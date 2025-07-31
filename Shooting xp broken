@@ -7,9 +7,10 @@ local power = actionValues:WaitForChild("Power")
 
 local powerThreshold = 65
 local shotMultiplier = 300
-local firingEnabled = false -- GUI toggle control
+local firingEnabled = false
+local fired = false
 
--- Create GUI
+-- GUI Setup
 local screenGui = Instance.new("ScreenGui", PlayerGui)
 screenGui.Name = "ShotToggleGUI"
 screenGui.ResetOnSpawn = false
@@ -30,14 +31,16 @@ toggleButton.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 toggleButton.Font = Enum.Font.SourceSansBold
 toggleButton.TextSize = 18
 
--- Toggle logic
+-- Toggle Button Logic
 toggleButton.MouseButton1Click:Connect(function()
-    firingEnabled = not firingEnabled
-    toggleButton.Text = firingEnabled and "Auto Shot: ON" or "Auto Shot: OFF"
-    toggleButton.BackgroundColor3 = firingEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(0, 150, 255)
+    if not fired then
+        firingEnabled = not firingEnabled
+        toggleButton.Text = firingEnabled and "Auto Shot: ON" or "Auto Shot: OFF"
+        toggleButton.BackgroundColor3 = firingEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(0, 150, 255)
+    end
 end)
 
--- Shooting function
+-- Fire Shot Function
 local function fireShot()
     local args = {
         [1] = false,
@@ -52,14 +55,21 @@ local function fireShot()
             for i = 1, shotMultiplier do
                 shootingEvent:FireServer(unpack(args))
             end
-            print("Power ≥ 65 → Fired", shotMultiplier, "shots.")
+            print("Fired", shotMultiplier, "shots at power ≥ 65.")
         end
     end
 end
 
--- Power change detection
-power:GetPropertyChangedSignal("Value"):Connect(function()
-    if firingEnabled and power.Value >= powerThreshold then
+-- Power Listener (One-Time)
+local connection
+connection = power:GetPropertyChangedSignal("Value"):Connect(function()
+    if not fired and firingEnabled and power.Value >= powerThreshold then
+        fired = true
         fireShot()
+        
+        -- Cleanup
+        if connection then connection:Disconnect() end
+        screenGui:Destroy()
+        print("Shot fired. GUI and listener destroyed.")
     end
 end)
