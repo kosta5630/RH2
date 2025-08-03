@@ -27,7 +27,7 @@ local Window = Rayfield:CreateWindow({
        FileName = "BladeBallKey",
        SaveKey = false,
        GrabKeyFromSite = true,
-       Key = {"https://pastebin.com/raw/KT2YvsJ8"}
+       Key = {"https://pastebin.com/QZYyHa0H"}
     }
 })
 
